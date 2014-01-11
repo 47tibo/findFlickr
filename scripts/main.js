@@ -76,18 +76,23 @@ $( document ).ready(function() {
     // this.$container = $('<article id="flickr-search">');
     // and $elem.replaceWith() buggy under IE7 & 8
     // let's do it the classical way
-    var container = document.createElement('article'),
+    var
+      container = document.createElement('article'),
       header = document.createElement('header'),
       searchField =document.createElement('input'),
       searchButton = document.createElement('button'),
       moreButton = document.createElement('button'),
       body = document.createElement('section');
 
+    searchButton.innerHTML = 'Search';
+    moreButton.innerHTML  = 'More results';
+
     header.appendChild(searchField);
     header.appendChild(searchButton);
     container.appendChild(header);
     container.appendChild(body);
 
+    // only one append operation = optimize reflow
     $elem[ 0 ].parentNode.replaceChild( container, $elem[ 0 ] );
 
     // now, let's wrap in jQuery
