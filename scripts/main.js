@@ -114,7 +114,6 @@
               console.log( photosBatch )
             },
             function( errorType ) {
-              alert( errorType + ", you fail this time" );
             },
             function( status ) {
               console.log('in progress');
@@ -125,11 +124,18 @@
 
     
     
-    window.FindFlickr = function( elem ) {
-      return new FindFlickr( elem );
+    window.FindFlickr = function( selector ) {
+      var elem = $( selector ),
+        ret;
+      if ( elem.length === 1 ) {
+        ret = new FindFlickr( elem );
+      } else {
+        ret = null;
+      }
+      return ret;
     };
 
-    window.FindFlickr($('#search-placeholder'));
+    window.FindFlickr('#search-placeholder');
 
   }); // domready
 })( this, this.document, jQuery );
