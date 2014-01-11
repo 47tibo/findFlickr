@@ -1,141 +1,161 @@
 ;(function( window, document, $, undefined ) {
-  $( document ).ready(function() {
+$( document ).ready(function() {
 
-    var i,
-      _term = null,
-      _fetchParams = null,
-      _currentPageNb = null,
-      _url = 'http://api.flickr.com/services/rest/?api_key=e2deebbdd91747fef895ebdbf71b6c70'
-        + '&format=json&nojsoncallback=1';
+  var i,
+    _term = null,
+    _fetchParams = null,
+    _currentPageNb = null,
+    _url = 'http://api.flickr.com/services/rest/?api_key=e2deebbdd91747fef895ebdbf71b6c70'
+      + '&format=json&jsoncallback=ieFix',
+    _jsonpSettings = {
+      dataType: 'jsonp',
+      contentType: "application/json",
+      jsonpCallback: 'ieFix'
+    };
 
-    function _completeQuery( params ) {
-      var url = _url;
-      for ( i in params ) {
-        url += ( '&' + i + '=' + params[ i ] );
-      }
-      return url;
+  // useless, only to properly process jsonp
+  function ieFix(){}
+
+  function _completeQuery( params ) {
+    var url = _url;
+    for ( i in params ) {
+      url += ( '&' + i + '=' + params[ i ] );
     }
+    return url;
+  }
 
-    function _fetchPagePhotos( pageNumber ) {
-      var deffered = new $.Deferred(),
-        params = {
-          method: 'flickr.photos.search',
-          text: _term,
-          per_page: _fetchParams.batchSize,
-          page: _currentPageNb
-        },
-        url = _completeQuery( params );
+  function _fetchPagePhotos( pageNumber ) {
+    var deffered = new $.Deferred(),
+      params = {
+        method: 'flickr.photos.search',
+        text: _term,
+        per_page: _fetchParams.batchSize,
+        page: _currentPageNb
+      },
+      url = _completeQuery( params );
 
-      $.ajax({
+    $.ajax($.extend(
+      _jsonpSettings,
+      {
         url: url,
         success: function( photosBatch ) {
           deffered.resolve( photosBatch );
         },
         error: function( jqXHR, errorType ) {
           deffered.reject( errorType );
-        },
-      });
-
-      setTimeout(function fetchPending() {
-        if ( deffered.state() === "pending" ) {
-          deffered.notify();
-          setTimeout( fetchPending, 500 );
         }
-      }, 0 );
+      })
+    );
 
-      return deffered.promise();
-    }
-
-
-    function FindFlickr( elem ) {
-
-      // UI components
-      this.$container = $('<article id="flickr-search">');
-      this.$header = $('<header id="search-header">');
-      this.$searchField = $('<input id="search-field" type="search" placeholder="search..." autocomplete="off" />');
-      this.$searchButton = $('<button id="search-button">Search</button>');
-      this.$moreButton = $('<button id="more-button">More results</button>');
-      this.$body = $('<section id="search-body"></section>');
-
-      var
-        breakWidth = 768,
-        viewportWidth = $( window ).width();
-
-      if ( viewportWidth > breakWidth ) {
-        _fetchParams = { batchSize: 20, photoSize: 'm' };
-      } else {
-        _fetchParams = { batchSize: 80, photoSize: 'z' };
+    setTimeout(function fetchPending() {
+      if ( deffered.state() === "pending" ) {
+        deffered.notify();
+        setTimeout( fetchPending, 300 );
       }
+    }, 0 );
 
-      // init UI
-      $( elem ).replaceWith( $.proxy(
-        function initUI() {
-          this.$header
-            .append( this.$searchField )
-            .append( this.$searchButton );
-          return this.$container
-            .append( this.$header )
-            .append( this.$body );
-        },
-        this)
-      );
+    return deffered.promise();
+  }
 
-      this.$searchButton.on('click', $.proxy(
-        function triggerSearch( e ) {
-          var term = this.$searchField.val();
-          this.search( term );
 
-          e.preventDefault();
-        },
-        this)
-      );
+  function FindFlickr( $elem ) {
 
-      this.$moreButton.on('click', $.proxy(
-        function loadNextPage( e ) {
-          // TODO, load next page depending on current page
+    // misc vars
+    var
+      breakWidth = 768,
+      viewportWidth = $( window ).width();
 
-          e.preventDefault();
-        },
-        this)
-      );
+    if ( viewportWidth > breakWidth ) {
+      _fetchParams = { batchSize: 20, photoSize: 'm' };
+    } else {
+      _fetchParams = { batchSize: 80, photoSize: 'z' };
     }
 
-    FindFlickr.prototype = {
-      search: function search( term ) {
-        _term = term;
-        _currentPageNb = 1;
-        this.loadPage( 1 );
+
+    // UI components
+    // this.$container = $('<article id="flickr-search">');
+    // and $elem.replaceWith() buggy under IE7 & 8
+    // let's do it the classical way
+    var container = document.createElement('article'),
+      header = document.createElement('header'),
+      searchField =document.createElement('input'),
+      searchButton = document.createElement('button'),
+      moreButton = document.createElement('button'),
+      body = document.createElement('section');
+
+    header.appendChild(searchField);
+    header.appendChild(searchButton);
+    container.appendChild(header);
+    container.appendChild(body);
+
+    $elem[ 0 ].parentNode.replaceChild( container, $elem[ 0 ] );
+
+    // now, let's wrap in jQuery
+    this.$container = $( container );
+    this.$header = $( header );
+    this.$searchField = $( searchField );
+    this.$searchButton = $( searchButton );
+    this.$moreButton = $( moreButton );
+    this.$body = $( body );
+
+    this.$searchButton.on('click', $.proxy(
+      function triggerSearch( e ) {
+        var term = this.$searchField.val();
+        this.search( term );
+
+        e.preventDefault();
       },
+      this)
+    );
 
-      loadPage: function loadPage( pageNumber ) {
-        $.when( _fetchPagePhotos( pageNumber ) )
-          .then(
-            function( photosBatch ) {
-              console.log( photosBatch )
-            },
-            function( errorType ) {
-            },
-            function( status ) {
-              console.log('in progress');
-            }
-          );
-      }
+    this.$moreButton.on('click', $.proxy(
+      function loadNextPage( e ) {
+        // TODO, load next page depending on current page
+
+        e.preventDefault();
+      },
+      this)
+    );
+
+  }
+
+
+  FindFlickr.prototype = {
+    search: function search( term ) {
+      _term = term;
+      _currentPageNb = 1;
+      this.loadPage( 1 );
+    },
+
+    loadPage: function loadPage( pageNumber ) {
+      $.when( _fetchPagePhotos( pageNumber ) )
+        .then(
+          function( photosBatch ) {
+            console.log( 'success!!!' );
+            console.log( photosBatch );
+          },
+          function( errorType ) {
+          },
+          function() {
+            console.log('in progress');
+          }
+        );
     }
+  }
 
-    
-    
-    window.FindFlickr = function( selector ) {
-      var elem = $( selector ),
-        ret;
-      if ( elem.length === 1 ) {
-        ret = new FindFlickr( elem );
-      } else {
-        ret = null;
-      }
-      return ret;
-    };
+  
+  window.FindFlickr = function( selector ) {
+    var $elem = $( selector ),
+      ret;
+    if ( $elem.length === 1 ) {
+      ret = new FindFlickr( $elem );
+    } else {
+      ret = null;
+    }
+    return ret;
+  };
 
-    window.FindFlickr('#search-placeholder');
+  window.FindFlickr('#search-placeholder');
 
-  }); // domready
+}); // domready
 })( this, this.document, jQuery );
