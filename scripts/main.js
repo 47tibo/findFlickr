@@ -1,7 +1,7 @@
 ;(function( window, document, $, undefined ) {
 $( document ).ready(function() {
 
-  var i,
+  var i, j, l, innerl,
     _term = null,
     _fetchParams = null,
     _currentPageNb = null,
@@ -29,8 +29,9 @@ $( document ).ready(function() {
       params = {
         method: 'flickr.photos.search',
         text: _term,
+        page: _currentPageNb,
         per_page: _fetchParams.batchSize,
-        page: _currentPageNb
+        extras: _fetchParams.photoSizes
       },
       url = _completeQuery( params );
 
@@ -65,10 +66,12 @@ $( document ).ready(function() {
       breakWidth = 768,
       viewportWidth = $( window ).width();
 
-    if ( viewportWidth > breakWidth ) {
-      _fetchParams = { batchSize: 20, photoSize: 'm' };
+    if ( viewportWidth < breakWidth ) {
+      // small devices
+      // picture size sorted by interest
+      _fetchParams = { batchSize: 20, photoSizes: 'url_t,url_s,url_q' };
     } else {
-      _fetchParams = { batchSize: 80, photoSize: 'z' };
+      _fetchParams = { batchSize: 80, photoSizes: 'url_n,url_m,url_z' };
     }
 
 
@@ -82,15 +85,17 @@ $( document ).ready(function() {
       searchField =document.createElement('input'),
       searchButton = document.createElement('button'),
       moreButton = document.createElement('button'),
-      body = document.createElement('section');
+      frame = document.createElement('section');
 
+    // add some style
+    frame.setAttribute('id', 'frame');
     searchButton.innerHTML = 'Search';
     moreButton.innerHTML  = 'More results';
 
     header.appendChild(searchField);
     header.appendChild(searchButton);
     container.appendChild(header);
-    container.appendChild(body);
+    container.appendChild(frame);
 
     // only one append operation = optimize reflow
     $elem[ 0 ].parentNode.replaceChild( container, $elem[ 0 ] );
@@ -101,7 +106,7 @@ $( document ).ready(function() {
     this.$searchField = $( searchField );
     this.$searchButton = $( searchButton );
     this.$moreButton = $( moreButton );
-    this.$body = $( body );
+    this.$frame = $( frame );
 
     this.$searchButton.on('click', $.proxy(
       function triggerSearch( e ) {
@@ -135,10 +140,51 @@ $( document ).ready(function() {
     loadPage: function loadPage( pageNumber ) {
       $.when( _fetchPagePhotos( pageNumber ) )
         .then(
-          function( photosBatch ) {
-            console.log( 'success!!!' );
-            console.log( photosBatch );
+          $.proxy(
+            function( photosBatch ) {
+            // here we're dealing in the old way because documentfragment is faster than jquery's append
+            // http://jsperf.com/documentfragment-appendchild-vs-jquery-append
+            var
+              photos = photosBatch.photos.photo,
+              photoSizes = _fetchParams.photoSizes.split(','),
+              fragment = document.createDocumentFragment(),
+              photo, aEl, imgEl, url, width, height, sizeLabel,
+              photoKey;
+
+            for ( i = 0, l = photos.length; i < l; i +=1 ) {
+              photo = photos[ i ];
+              aEl = document.createElement('a');
+              aEl.className = 'photo';
+              imgEl = document.createElement('img');
+
+              for ( j = 0, innerl = photoSizes.length; j <  innerl; j += 1 ) {
+                for ( photoKey in photo ) {
+                  if ( photoKey === photoSizes[ j ] ) {
+                    url = photo[ photoKey ];
+                    sizeLabel = photoKey.split('_')[1];
+                    width = photo['width_' + sizeLabel];
+                    height = photo['height_' + sizeLabel];
+                    break;
+                  }
+                }
+                if ( url ) {
+                  break;
+                }
+              }
+
+              imgEl.setAttribute( 'width', width );
+              imgEl.setAttribute( 'height', height );
+              imgEl.setAttribute( 'data-url', url );
+              aEl.appendChild( imgEl );
+              fragment.appendChild( aEl );
+            }
+
+            // one append, one reflow, imgs with dimensions
+            this.$frame[ 0 ].appendChild( fragment );
+
+
           },
+          this),
           function( errorType ) {
           },
           function() {
