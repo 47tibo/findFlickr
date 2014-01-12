@@ -22,9 +22,32 @@
   margin-left: 10px;
 }
 
+#fetching-infos {
+  position: fixed;
+  bottom: 5px;
+  right: 40%;
+  height: 30px;
+  width: 20%;
+  padding-left: 44px;
+  line-height: 30px;
+  color: rgb(41, 40, 40);
+  z-index: 3;
+  background-color: rgba(75, 74, 75, 0.33);
+  border-radius: 14px;
+  border: 1px solid rgb(150, 150, 150);
+}
+
+#fetching-infos.hidden {
+  display: none;
+}
+
 /* ----- smartphones' - up to 768px on 16px base ----- */
 @media only screen and (max-width: 48em) {
-
+  #fetching-infos {
+    right: 35%;
+    background-color: transparent;
+    border: none;
+  }
 }
 
 /* ---- large screens ----- */

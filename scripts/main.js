@@ -89,19 +89,14 @@ $( document ).ready(function() {
           _$window.on( 'scroll', $.proxy(
             function scrollInContainer() {
               if ( _isContainerBottom() ) {
-
-                console.log('bottom');
-
                 _$window.off('scroll');
                 _infiniteScroll.call( this );
               }
             }, this) );
         }, this ),
         function( errorType ) {
-          console.log('an error occurs of type: ' + errorType);
         },
         function() {
-          console.log('fetchnig datas....');
         }
       );
   }
@@ -158,7 +153,8 @@ $( document ).ready(function() {
       container = document.createElement('article'),
       header = document.createElement('header'),
       searchField =document.createElement('input'),
-      searchButton = document.createElement('button');
+      searchButton = document.createElement('button'),
+      fetchingInfos = document.createElement('aside');
 
     // add some style
     header.id = 'search-header';
@@ -167,11 +163,16 @@ $( document ).ready(function() {
     searchField.setAttribute( 'placeholder', 'search...');
     searchField.setAttribute( 'autocomplete', 'off');
     searchButton.id = 'search-button';
-    searchButton.innerHTML = '<img src="' + window.location.href + '/assets/flickr_logo.png">';
+    searchButton.innerHTML = '<img src="' + window.location.href + '/assets/flickr_logo.png" />';
+    fetchingInfos.id = 'fetching-infos';
+    fetchingInfos.className = 'hidden';
+    fetchingInfos.innerHTML = '<img src="' + window.location.href + '/assets/flickr_spinner.gif" />'
+                                + ((viewportWidth < breakWidth) ? '' : ' Fetching more photos...');
 
     header.appendChild(searchField);
     header.appendChild(searchButton);
     container.appendChild(header);
+    container.appendChild(fetchingInfos);
 
     // only one append operation = optimize reflow
     $elem[ 0 ].parentNode.replaceChild( container, $elem[ 0 ] );
@@ -181,9 +182,9 @@ $( document ).ready(function() {
     // for infinite scroll
     _containerTop = this.$container.offset().top;
 
-    this.$header = $( header );
     this.$searchField = $( searchField );
     this.$searchButton = $( searchButton );
+    this.$fetchingInfos = $( fetchingInfos );
 
     this.$searchButton.on('click', $.proxy(
       function triggerSearch( e ) {
@@ -229,6 +230,9 @@ $( document ).ready(function() {
         // user misuses
         return null;
       }
+
+      this.$fetchingInfos.removeClass('hidden');
+
 
       $.when( _fetchPagePhotos() )
         .then(
@@ -286,7 +290,7 @@ $( document ).ready(function() {
                 gutterWidth: 5
               }
             });
-
+            this.$fetchingInfos.addClass('hidden');
             deffered.resolve();
           },
           this ),

@@ -1,15 +1,17 @@
 #search-header {
-  height: 30px;
-  padding: 10px;
+  height: 50px;
 }
 
 #search-field {
   margin-left: 60px;
-  margin-top: 5px;
+  height: 20px;
 }
 
 #search-button {
   width: 80px;
   padding: 0;
-  vertical-align: baseline;
+}
+
+#fetching-infos {
+  background-color: #969696;
 }
