@@ -2,7 +2,6 @@
 $( document ).ready(function() {
 
   var i, j, l, innerl,
-    body = document.body,
     _term = null,
     _fetchParams = null,
     _currentPageNb = null,
@@ -12,7 +11,12 @@ $( document ).ready(function() {
       dataType: 'jsonp',
       contentType: "application/json",
       jsonpCallback: 'ieFix'
-    };
+    },
+    _$window = $( window ),
+    _viewportHeight = null,
+    // containerTop is relative to document
+    _containerTop = null,
+    _containerHeight = 0;
 
   // useless, only to properly process jsonp
   function ieFix(){}
@@ -59,27 +63,30 @@ $( document ).ready(function() {
     return deffered.promise();
   }
 
-  function _isPageBottom() {
-    var viewportHeight = window.innerHeight,
-      // various scrollTop() and offsetheight() implementations -> use $
-      $body = $( body ),
-      scrollTop = $body.scrollTop(),
-      pageHeight = $body.height();
+  function _isContainerBottom() {
+    var
+      windowScrollTop = _$window.scrollTop(),
+      containerScrollTop = windowScrollTop + _containerTop;
 
-    return (( viewportHeight + scrollTop ) >= pageHeight);
+    return (( _viewportHeight + containerScrollTop ) >= _containerHeight);
   }
 
   function _infiniteScroll() {
-    var $window = $( window );
     $.when( this.loadPage( _currentPageNb ) )
       .then(
         $.proxy(
         function() {
+          // new page added, get new height and let's load the next one!
+          _containerHeight = this.$container.height();
           _currentPageNb++;
-          $window.on( 'scroll', $.proxy(
-            function scrollInWindow() {
-              if ( _isPageBottom() ) {
-                $window.off('scroll');
+
+          _$window.on( 'scroll', $.proxy(
+            function scrollInContainer() {
+              if ( _isContainerBottom.call( this ) ) {
+
+                console.log('bottom');
+
+                _$window.off('scroll');
                 _infiniteScroll.call( this );
               }
             }, this) );
@@ -99,7 +106,11 @@ $( document ).ready(function() {
     // misc vars
     var
       breakWidth = 768,
-      viewportWidth = $( window ).width();
+      viewportWidth = _$window.width();
+
+    // private instance vars
+    _viewportHeight = _$window.height(); // TODO update on resize
+
 
     if ( viewportWidth < breakWidth ) {
       // small devices
@@ -119,29 +130,32 @@ $( document ).ready(function() {
       header = document.createElement('header'),
       searchField =document.createElement('input'),
       searchButton = document.createElement('button'),
-      moreButton = document.createElement('button'),
-      frame = document.createElement('section');
+      moreButton = document.createElement('button');
+      framesContainer = document.createElement('section');
 
     // add some style
-    frame.id = 'frame';
+    framesContainer.id = 'frames-container';
     searchButton.innerHTML = 'Search';
     moreButton.innerHTML  = 'More results';
 
     header.appendChild(searchField);
     header.appendChild(searchButton);
     container.appendChild(header);
-    container.appendChild(frame);
+    container.appendChild(framesContainer);
 
     // only one append operation = optimize reflow
     $elem[ 0 ].parentNode.replaceChild( container, $elem[ 0 ] );
 
     // now, let's wrap in jQuery
     this.$container = $( container );
+    // for infinite scroll
+    _containerTop = this.$container.offset().top;
+
     this.$header = $( header );
     this.$searchField = $( searchField );
     this.$searchButton = $( searchButton );
     this.$moreButton = $( moreButton );
-    this.$frame = $( frame );
+    this.$framesContainer = $( framesContainer );
 
     this.$searchButton.on('click', $.proxy(
       function triggerSearch( e ) {
@@ -181,12 +195,10 @@ $( document ).ready(function() {
         .then(
           $.proxy(
             function( photosBatch ) {
-            // here we're dealing in the old way because documentfragment is faster than jquery's append
-            // http://jsperf.com/documentfragment-appendchild-vs-jquery-append
             var
               photos = photosBatch.photos.photo,
               photoSizes = _fetchParams.photoSizes.split(','),
-              fragment = document.createDocumentFragment(),
+              frame = document.createElement('div'),
               photo, aEl, imgEl, url, width, height, sizeLabel,
               photoKey, imgEls = [];
 
@@ -215,11 +227,11 @@ $( document ).ready(function() {
               imgEl.setAttribute( 'height', height );
               imgEl.setAttribute( 'data-url', url );
               imgEls.push( aEl.appendChild( imgEl ) );
-              fragment.appendChild( aEl );
+              frame.appendChild( aEl );
             }
 
             // single append, imgs have dimensions -> reflow 1
-            this.$frame[ 0 ].appendChild( fragment );
+            this.$framesContainer[ 0 ].appendChild( frame );
 
             // load imgs -> repaint
             for ( i = 0, l = imgEls.length; i < l; i +=1 ) {
@@ -227,7 +239,7 @@ $( document ).ready(function() {
             }
 
             // isotope all this stuff -> reflow 2
-            this.$frame.masonry({
+            $( frame ).masonry({
               itemSelector : '.photo',
               gutter: 10
             });
