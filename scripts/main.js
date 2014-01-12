@@ -69,7 +69,7 @@ $( document ).ready(function() {
     if ( viewportWidth < breakWidth ) {
       // small devices
       // picture size sorted by interest
-      _fetchParams = { batchSize: 20, photoSizes: 'url_t,url_s,url_q' };
+      _fetchParams = { batchSize: 40, photoSizes: 'url_t,url_s,url_q' };
     } else {
       _fetchParams = { batchSize: 80, photoSizes: 'url_n,url_m,url_z' };
     }
@@ -88,7 +88,7 @@ $( document ).ready(function() {
       frame = document.createElement('section');
 
     // add some style
-    frame.setAttribute('id', 'frame');
+    frame.id = 'frame';
     searchButton.innerHTML = 'Search';
     moreButton.innerHTML  = 'More results';
 
@@ -149,7 +149,7 @@ $( document ).ready(function() {
               photoSizes = _fetchParams.photoSizes.split(','),
               fragment = document.createDocumentFragment(),
               photo, aEl, imgEl, url, width, height, sizeLabel,
-              photoKey;
+              photoKey, imgEls = [];
 
             for ( i = 0, l = photos.length; i < l; i +=1 ) {
               photo = photos[ i ];
@@ -175,14 +175,23 @@ $( document ).ready(function() {
               imgEl.setAttribute( 'width', width );
               imgEl.setAttribute( 'height', height );
               imgEl.setAttribute( 'data-url', url );
-              aEl.appendChild( imgEl );
+              imgEls.push( aEl.appendChild( imgEl ) );
               fragment.appendChild( aEl );
             }
 
-            // one append, one reflow, imgs with dimensions
+            // single append, imgs have dimensions -> reflow 1
             this.$frame[ 0 ].appendChild( fragment );
 
+            // load imgs -> repaint
+            for ( i = 0, l = imgEls.length; i < l; i +=1 ) {
+              imgEls[ i ].src = imgEls[ i ].getAttribute('data-url');
+            }
 
+            // isotope all this stuff -> reflow 2
+            this.$frame.masonry({
+              itemSelector : '.photo',
+              gutter: 10
+            });
           },
           this),
           function( errorType ) {
