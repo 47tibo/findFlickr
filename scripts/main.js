@@ -152,6 +152,7 @@ $( document ).ready(function() {
     var
       container = document.createElement('article'),
       header = document.createElement('header'),
+      form = document.createElement('form'),
       searchField =document.createElement('input'),
       searchButton = document.createElement('button'),
       fetchingInfos = document.createElement('aside');
@@ -169,8 +170,9 @@ $( document ).ready(function() {
     fetchingInfos.innerHTML = '<img src="' + window.location.href + '/assets/flickr_spinner.gif" />'
                                 + ((viewportWidth < breakWidth) ? '' : ' Fetching more photos...');
 
-    header.appendChild(searchField);
-    header.appendChild(searchButton);
+    form.appendChild(searchField);
+    form.appendChild(searchButton);
+    header.appendChild(form);
     container.appendChild(header);
     container.appendChild(fetchingInfos);
 
