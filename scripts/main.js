@@ -35,7 +35,7 @@ $( document ).ready(function() {
     return url;
   }
 
-  function _fetchPagePhotos( pageNumber ) {
+  function _fetchPagePhotos() {
     var deffered = new $.Deferred(),
       params = {
         method: 'flickr.photos.search',
@@ -78,7 +78,7 @@ $( document ).ready(function() {
   }
 
   function _infiniteScroll() {
-    $.when( this.loadPage( _currentPageNb ) )
+    $.when( this.loadPage() )
       .then(
         $.proxy(
         function() {
@@ -209,10 +209,24 @@ $( document ).ready(function() {
       _infiniteScroll.call( this );
     },
 
-    loadPage: function loadPage( pageNumber ) {
+    loadPage: function loadPage( pageNumber, term ) {
       var deffered = new $.Deferred();
 
-      $.when( _fetchPagePhotos( pageNumber ) )
+      if ( pageNumber && term ) {
+        // #loadPage( 23, 'beer' )
+        _clearContainer.call( this );
+
+        // clean inputs
+        _currentPageNb = parseInt( pageNumber );
+        _term = '' + term;
+      } else if ( !pageNumber && !term ) {
+        // called from _infiniteScroll()
+      } else {
+        // user misuses
+        return null;
+      }
+
+      $.when( _fetchPagePhotos() )
         .then(
           $.proxy(
             function( photosBatch ) {
@@ -293,7 +307,7 @@ $( document ).ready(function() {
     return ret;
   };
 
-  window.FindFlickr('#search-placeholder');
+  window.findF = window.FindFlickr('#search-placeholder');
 
 }); // domready
 })( this, this.document, jQuery );
