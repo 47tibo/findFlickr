@@ -158,12 +158,10 @@ $( document ).ready(function() {
       container = document.createElement('article'),
       header = document.createElement('header'),
       searchField =document.createElement('input'),
-      searchButton = document.createElement('button'),
-      moreButton = document.createElement('button');
+      searchButton = document.createElement('button');
 
     // add some style
     searchButton.innerHTML = 'Search';
-    moreButton.innerHTML  = 'More results';
 
     header.appendChild(searchField);
     header.appendChild(searchButton);
@@ -180,21 +178,11 @@ $( document ).ready(function() {
     this.$header = $( header );
     this.$searchField = $( searchField );
     this.$searchButton = $( searchButton );
-    this.$moreButton = $( moreButton );
 
     this.$searchButton.on('click', $.proxy(
       function triggerSearch( e ) {
         var term = this.$searchField.val();
         this.search( term );
-
-        e.preventDefault();
-      },
-      this)
-    );
-
-    this.$moreButton.on('click', $.proxy(
-      function loadNextPage( e ) {
-        // TODO, load next page depending on current page
 
         e.preventDefault();
       },
