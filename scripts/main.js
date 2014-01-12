@@ -161,7 +161,13 @@ $( document ).ready(function() {
       searchButton = document.createElement('button');
 
     // add some style
-    searchButton.innerHTML = 'Search';
+    header.id = 'search-header';
+    searchField.id = 'search-field';
+    searchField.setAttribute( 'type', 'search');
+    searchField.setAttribute( 'placeholder', 'search...');
+    searchField.setAttribute( 'autocomplete', 'off');
+    searchButton.id = 'search-button';
+    searchButton.innerHTML = '<img src="' + window.location.href + '/assets/flickr_logo.png">';
 
     header.appendChild(searchField);
     header.appendChild(searchButton);
@@ -194,13 +200,18 @@ $( document ).ready(function() {
 
   FindFlickr.prototype = {
     search: function search( term ) {
-      _setTerm.call( this, term );
-      _currentPageNb = 1;
-      
-      // initialize or clear container
-      _clearContainer.call( this );
-      // initialize scrolling
-      _infiniteScroll.call( this );
+      term = term.replace(/\s+/g, '');
+      if ( term ) {
+        _setTerm.call( this, term );
+        _currentPageNb = 1;
+        
+        // initialize or clear container
+        _clearContainer.call( this );
+        // initialize scrolling
+        _infiniteScroll.call( this );
+      } else {
+        return null;
+      }
     },
 
     loadPage: function loadPage( pageNumber, term ) {
@@ -271,7 +282,9 @@ $( document ).ready(function() {
             // isotope all this stuff -> reflow 2
             $( frame ).isotope({
               itemSelector : '.photo',
-              gutter: 10
+              masonry: {
+                gutterWidth: 5
+              }
             });
 
             deffered.resolve();

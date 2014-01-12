@@ -1,3 +1,42 @@
+/* ----- global styles ----- */
+#search-header {
+  position: fixed;
+  height: 50px;
+  width: 100%;
+  line-height: 50px;
+  background-color: #292929;
+  color: #666666;
+  z-index: 3;
+}
+
+#search-field {
+  height: 60%;
+}
+
+#search-button {
+  background-color: #0063dc;
+  border: 1px solid rgb(143, 113, 221);
+  border-radius: 5px;
+  padding: 4px;
+  vertical-align: middle;
+  margin-left: 10px;
+}
+
+/* ----- smartphones' - up to 768px on 16px base ----- */
+@media only screen and (max-width: 48em) {
+
+}
+
+/* ---- large screens ----- */
+@media only screen and (min-width: 48em) {
+
+  #search-field {
+    width: 20%;
+    margin-left: 60px;
+  }
+
+}
+
 .photo {
-  margin-bottom: 10px;
+  margin-bottom: 5px;
 }
