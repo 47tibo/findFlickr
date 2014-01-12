@@ -2,6 +2,7 @@
 $( document ).ready(function() {
 
   var i, j, l, innerl,
+    body = document.body,
     _term = null,
     _fetchParams = null,
     _currentPageNb = null,
@@ -56,6 +57,40 @@ $( document ).ready(function() {
     }, 0 );
 
     return deffered.promise();
+  }
+
+  function _isPageBottom() {
+    var viewportHeight = window.innerHeight,
+      // various scrollTop() and offsetheight() implementations -> use $
+      $body = $( body ),
+      scrollTop = $body.scrollTop(),
+      pageHeight = $body.height();
+
+    return (( viewportHeight + scrollTop ) >= pageHeight);
+  }
+
+  function _infiniteScroll() {
+    var $window = $( window );
+    $.when( this.loadPage( _currentPageNb ) )
+      .then(
+        $.proxy(
+        function() {
+          _currentPageNb++;
+          $window.on( 'scroll', $.proxy(
+            function scrollInWindow() {
+              if ( _isPageBottom() ) {
+                $window.off('scroll');
+                _infiniteScroll.call( this );
+              }
+            }, this) );
+        }, this ),
+        function( errorType ) {
+          console.log('an error occurs of type: ' + errorType);
+        },
+        function() {
+          console.log('fetchnig datas....');
+        }
+      );
   }
 
 
@@ -134,10 +169,14 @@ $( document ).ready(function() {
     search: function search( term ) {
       _term = term;
       _currentPageNb = 1;
-      this.loadPage( 1 );
+      
+      // initialize scrolling
+      _infiniteScroll.call( this );
     },
 
     loadPage: function loadPage( pageNumber ) {
+      var deffered = new $.Deferred();
+
       $.when( _fetchPagePhotos( pageNumber ) )
         .then(
           $.proxy(
@@ -192,14 +231,18 @@ $( document ).ready(function() {
               itemSelector : '.photo',
               gutter: 10
             });
+
+            deffered.resolve();
           },
-          this),
+          this ),
           function( errorType ) {
+            deffered.reject( errorType );
           },
           function() {
-            console.log('in progress');
+            deffered.notify();
           }
         );
+      return deffered.promise();
     }
   }
 
