@@ -239,7 +239,7 @@ $( document ).ready(function() {
             }
 
             // isotope all this stuff -> reflow 2
-            $( frame ).masonry({
+            $( frame ).isotope({
               itemSelector : '.photo',
               gutter: 10
             });
