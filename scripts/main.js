@@ -106,6 +106,23 @@ $( document ).ready(function() {
       );
   }
 
+  function _clearContainer() {
+    // remove handler
+    _$window.off('scroll');
+
+    var framesContainer = document.createElement('section');
+    framesContainer.id = 'frames-container';
+    
+    if ( this.$framesContainer ) {
+      // refresh
+      this.$container[ 0 ].replaceChild( framesContainer, this.$framesContainer[ 0 ] );
+    } else {
+      // init
+      this.$container[ 0 ].appendChild( framesContainer );
+    }
+    this.$framesContainer = $( framesContainer );
+  }
+
 
   function FindFlickr( $elem ) {
 
@@ -137,17 +154,14 @@ $( document ).ready(function() {
       searchField =document.createElement('input'),
       searchButton = document.createElement('button'),
       moreButton = document.createElement('button');
-      framesContainer = document.createElement('section');
 
     // add some style
-    framesContainer.id = 'frames-container';
     searchButton.innerHTML = 'Search';
     moreButton.innerHTML  = 'More results';
 
     header.appendChild(searchField);
     header.appendChild(searchButton);
     container.appendChild(header);
-    container.appendChild(framesContainer);
 
     // only one append operation = optimize reflow
     $elem[ 0 ].parentNode.replaceChild( container, $elem[ 0 ] );
@@ -161,7 +175,6 @@ $( document ).ready(function() {
     this.$searchField = $( searchField );
     this.$searchButton = $( searchButton );
     this.$moreButton = $( moreButton );
-    this.$framesContainer = $( framesContainer );
 
     this.$searchButton.on('click', $.proxy(
       function triggerSearch( e ) {
@@ -190,6 +203,8 @@ $( document ).ready(function() {
       _term = term;
       _currentPageNb = 1;
       
+      // initialize or clear container
+      _clearContainer.call( this );
       // initialize scrolling
       _infiniteScroll.call( this );
     },
