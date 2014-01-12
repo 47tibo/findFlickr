@@ -123,6 +123,12 @@ $( document ).ready(function() {
     this.$framesContainer = $( framesContainer );
   }
 
+  function _setTerm( term ) {
+    // coercice input
+    _term = '' + term;
+    this.$searchField.val( _term );
+  }
+
 
   function FindFlickr( $elem ) {
 
@@ -200,7 +206,7 @@ $( document ).ready(function() {
 
   FindFlickr.prototype = {
     search: function search( term ) {
-      _term = term;
+      _setTerm.call( this, term );
       _currentPageNb = 1;
       
       // initialize or clear container
@@ -215,10 +221,9 @@ $( document ).ready(function() {
       if ( pageNumber && term ) {
         // #loadPage( 23, 'beer' )
         _clearContainer.call( this );
-
         // clean inputs
         _currentPageNb = parseInt( pageNumber );
-        _term = '' + term;
+        _setTerm.call( this, term );
       } else if ( !pageNumber && !term ) {
         // called from _infiniteScroll()
       } else {
