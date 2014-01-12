@@ -1,7 +1,12 @@
 ;(function( window, document, $, undefined ) {
 $( document ).ready(function() {
 
-  var i, j, l, innerl,
+  var
+    // loop vars
+    i, j, l, innerl,
+
+    // -- FindFlickr's "private" attributes
+    // ajax config
     _term = null,
     _fetchParams = null,
     _currentPageNb = null,
@@ -12,6 +17,7 @@ $( document ).ready(function() {
       contentType: "application/json",
       jsonpCallback: 'ieFix'
     },
+    // window's dimensions (for infinitescroll)
     _$window = $( window ),
     _viewportHeight = null,
     // containerTop is relative to document
@@ -114,7 +120,7 @@ $( document ).ready(function() {
 
     if ( viewportWidth < breakWidth ) {
       // small devices
-      // picture size sorted by interest
+      // photo size sorted by interest
       _fetchParams = { batchSize: 40, photoSizes: 'url_t,url_s,url_q' };
     } else {
       _fetchParams = { batchSize: 80, photoSizes: 'url_n,url_m,url_z' };
@@ -202,6 +208,8 @@ $( document ).ready(function() {
               photo, aEl, imgEl, url, width, height, sizeLabel,
               photoKey, imgEls = [];
 
+            // for each photo, retrieve appropriate size
+            // if not available, try another (3 attempts)
             for ( i = 0, l = photos.length; i < l; i +=1 ) {
               photo = photos[ i ];
               aEl = document.createElement('a');
@@ -230,7 +238,7 @@ $( document ).ready(function() {
               frame.appendChild( aEl );
             }
 
-            // single append, imgs have dimensions -> reflow 1
+            // single append, imgs have their final dimensions -> reflow 1
             this.$framesContainer[ 0 ].appendChild( frame );
 
             // load imgs -> repaint
@@ -258,7 +266,7 @@ $( document ).ready(function() {
     }
   }
 
-  
+  // if selector dont target a unique element, do nothing
   window.FindFlickr = function( selector ) {
     var $elem = $( selector ),
       ret;
