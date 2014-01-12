@@ -88,7 +88,7 @@ $( document ).ready(function() {
 
           _$window.on( 'scroll', $.proxy(
             function scrollInContainer() {
-              if ( _isContainerBottom.call( this ) ) {
+              if ( _isContainerBottom() ) {
 
                 console.log('bottom');
 
