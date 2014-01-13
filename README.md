@@ -16,13 +16,13 @@ That's it! You can now request Flickr's photos in an infinite scroll.
 You can also handle the instance programmatically:
 ```javascript
 // search a term and trigger an infinite scroll
-  findFlickr.search('funk');
-// search a term and retrieve a specific page in the matched photos
+findFlickr.search('funk');
+// search a term and retrieve a specific page among the set of photos
 findFlickr.loadPage( 6, 'red apple' );
 ```
-*Tip* : #loadPage can be use to easily implement a classical pagination
+*Tip* : `#loadPage` can be used to easily implement a classical pagination
 
-see a [demo](http://tcamp.fr/test/flickr/) here. Also try on a smartphone.
+See a demo [here](http://tcamp.fr/test/flickr/). Also try on a smartphone.
 
 
 
@@ -30,14 +30,14 @@ see a [demo](http://tcamp.fr/test/flickr/) here. Also try on a smartphone.
 ## Dependencies
 **jQuery**:
 For :
-  - cross browser compatibility regards to elements dimensions and computed styles
-  - events registration syntaxic sugar
-  - ajax implementation. jQuery.ajax allows to implement Ajax calls in a breaze,
+  - cross browser compatibilities, regard to elements' dimensions and computed styles
+  - events registration
+  - ajax implementation. jQuery.ajax allows to implement Ajax calls in a breeze,
   from IE7 to Chrome Canary
   - Function.prototype.bind support for old browsers (jQuery.proxy)
   - jQuery.extend()
-  - jQuery.Deferred() and promises 's control flow. Tremendously improve code comprehension and maintainability
-  in a callback driven environment
+  - jQuery.Deferred() and promises 's control flow. Tremendously improves code comprehension and maintainability
+  in a "callbacks driven" environment
 
 **Isotope**:
 For each request, the server returns a batch of 40 or 80 photos' urls. Those photos have various formats
@@ -57,7 +57,13 @@ There is two layouts, one for mobiles, the other for desktops, with the correspo
 For performance sake the batch's size is limited to 40 photos under smartphones and 80 under large screens.
 Images are displayed in their original dimensions. Thus the images requested for mobiles devices are smaller than
 large devices.
-In order to optimize browser's reflows and repaints, I defined
+In order to optimize browser's reflows and repaints, each batch of photos is handle as follow:
+- for each photo, create an `<img>` element, with fixed width and height
+- put the `<img>` into a `<a>` element and append them to a container
+- once that all items are appended to the container, insert the container in the DOM
+- update the `src` attribute of each `<img>` with the appropriate url. This way images
+are fetched and will show up in presized `<img>` elements
+- initialize Isotope on our container
 
 
 
@@ -65,7 +71,7 @@ In order to optimize browser's reflows and repaints, I defined
 ## Implementation, issues, solutions
 
   - all code is wrapped within an immediate function: avoid polluting namespace and allow to
-  retrieve reliable references of basic elements (eg window)
+  retrieve reliable references on basic elements (eg window)
   - the only access point to the interface is the FindFlickr property, created on the global
   object. This property is a function which wraps the instanciation statement (facade pattern)
   - at first I used the jQuery constructor to instanciate and append to the DOM the UI elements 
