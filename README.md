@@ -75,7 +75,7 @@ are fetched and will show up in presized `<img>` elements
   - the only access point to the interface is the FindFlickr property, created on the global
   object. This property is a function which wraps the instanciation statement (*facade pattern*)
   - at first I used the jQuery constructor to instanciate and append to the DOM the UI elements 
-  (HTML5 elements, like `section`). Unfortunately this approach raised some bug under IE8- and finally
+  (HTML5 elements, like `section`). Unfortunately this approach raised some bugs under IE8- and finally
   I handled those elements with JS API's statements. Ultimately most of DOM manipulations are done *natively*
   - I first tried to use XHR to retrieve the datas but that implied working in a *CORS mode* and
   it was buggy under IE. I resolved the issue by using jQuery's JSONP.
