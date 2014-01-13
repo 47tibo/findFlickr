@@ -20,7 +20,7 @@ findFlickr.search('funk');
 // search a term and retrieve a specific page among the set of photos
 findFlickr.loadPage( 6, 'red apple' );
 ```
-*Tip* : `#loadPage` can be used to easily implement a classical pagination
+*Tip* : `#loadPage` can be used to easily implement a classical pagination.
 
 See a demo [here](http://tcamp.fr/test/flickr/). Also try on a smartphone.
 
@@ -32,11 +32,11 @@ See a demo [here](http://tcamp.fr/test/flickr/). Also try on a smartphone.
 For :
   - cross browser compatibilities, regard to elements' dimensions and computed styles
   - events registration
-  - ajax implementation. jQuery.ajax allows to implement Ajax calls in a breeze,
+  - Ajax implementation: `jQuery.ajax` allows to implement Ajax calls in a breeze,
   from IE7 to Chrome Canary
-  - Function.prototype.bind support for old browsers (jQuery.proxy)
-  - jQuery.extend()
-  - jQuery.Deferred() and promises 's control flow. Tremendously improves code comprehension and maintainability
+  - Function.prototype.bind support for old browsers (`jQuery.proxy`)
+  - `jQuery.extend()`
+  - `jQuery.Deferred()` and promises 's control flow. Tremendously improves code comprehension and maintainability
   in a "callbacks driven" environment
 
 **Isotope**:
@@ -48,16 +48,16 @@ We're using the masonry layout, but instead of the Masonry library, Isotope supp
 
 
 ## Architecture and technical constraints
-The UI components and JS logic are wrapped into a FindFlickr interface (or class if you prefer).
-Considering the access point to this interface, I didn't stick to classic jQuery pluggin template ($.fn).
+The UI components and JS logic are wrapped into a `FindFlickr` interface (or class if you prefer).
+Considering the access point to this interface, I didn't stick to the classic jQuery's pluggin template ($.fn).
 Indeed FindFlickr doesn't need to inherit of jQuery. It's a standalone interface with some very specific
 concerns.
 
-There is two layouts, one for mobiles, the other for desktops, with the corresponding media querries.
-For performance sake the batch's size is limited to 40 photos under smartphones and 80 under large screens.
+There are *two layouts*, one for mobiles, the other for desktops, with the corresponding media queries.
+For performance sake, the batch's size is limited to 40 photos under smartphones and 80 under large screens.
 Images are displayed in their original dimensions. Thus the images requested for mobiles devices are smaller than
 large devices.
-In order to optimize browser's reflows and repaints, each batch of photos is handle as follow:
+In order to optimize browser's reflows and repaints, each batch of photos is handled as follow:
 - for each photo, create an `<img>` element, with fixed width and height
 - put the `<img>` into a `<a>` element and append them to a container
 - once that all items are appended to the container, insert the container in the DOM
@@ -71,13 +71,13 @@ are fetched and will show up in presized `<img>` elements
 ## Implementation, issues, solutions
 
   - all code is wrapped within an immediate function: avoid polluting namespace and allow to
-  retrieve reliable references on basic elements (eg window)
+  retrieve reliable references on basic elements (eg `window`)
   - the only access point to the interface is the FindFlickr property, created on the global
-  object. This property is a function which wraps the instanciation statement (facade pattern)
+  object. This property is a function which wraps the instanciation statement (*facade pattern*)
   - at first I used the jQuery constructor to instanciate and append to the DOM the UI elements 
-  (HTML5 elements, like section). Unfortunately this approach raised some bug under IE8- and finally
+  (HTML5 elements, like `section`). Unfortunately this approach raised some bug under IE8- and finally
   I handled those elements with JS API's statements. Ultimately most of DOM manipulations are done *natively*
-  - I first tried to use XHR to retrieve datas but that implied to work in a CORS mode and
+  - I first tried to use XHR to retrieve the datas but that implied working in a *CORS mode* and
   it was buggy under IE. I resolved the issue by using jQuery's JSONP.
   - I crafted a little GIF to act as a spinner
 
@@ -95,6 +95,6 @@ are fetched and will show up in presized `<img>` elements
 
 ## Improvements
   - hook onto the resize event to recompute viewport's height
-  - improve infinite scroll under Android tab
+  - improve infinite scroll under Android's tabs
   - each photo is wrapped into a link -> display the image in original size when
   clicking
