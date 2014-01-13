@@ -1,5 +1,4 @@
 ;(function( window, document, $, undefined ) {
-$( document ).ready(function() {
 
   var
     // loop vars
@@ -60,7 +59,7 @@ $( document ).ready(function() {
     );
 
     setTimeout(function fetchPending() {
-      if ( deffered.state() === "pending" ) {
+      if ( deffered.state() === 'pending' ) {
         deffered.notify();
         setTimeout( fetchPending, 300 );
       }
@@ -72,7 +71,12 @@ $( document ).ready(function() {
   function _isContainerBottom() {
     var
       windowScrollTop = _$window.scrollTop(),
-      containerScrollTop = windowScrollTop + _containerTop;
+      containerScrollTop = windowScrollTop - _containerTop;
+
+    if ( containerScrollTop < 0 ) {
+      // not in container yet
+      return false;
+    }
 
     return (( _viewportHeight + containerScrollTop ) >= _containerHeight);
   }
@@ -82,7 +86,7 @@ $( document ).ready(function() {
       .then(
         $.proxy(
         function() {
-          // new page added, get new height and let's load the next one!
+          // new page added, get new height and ready to load the next one!
           _containerHeight = this.$container.height();
           _currentPageNb++;
 
@@ -118,9 +122,20 @@ $( document ).ready(function() {
     this.$framesContainer = $( framesContainer );
   }
 
+
+  function _checkTerm( term ) {
+    if ( term ) {
+      term = '' + term;
+      term = term.replace( /^\s+/, '' )
+                 .replace( /\s+$/, '' );
+      return !!term;
+    } else {
+      return false;
+    }
+  }
+
   function _setTerm( term ) {
-    // coercice input
-    _term = '' + term;
+    _term = term;
     this.$searchField.val( _term );
   }
 
@@ -137,10 +152,11 @@ $( document ).ready(function() {
 
 
     if ( viewportWidth < breakWidth ) {
-      // small devices
+      // small screens, ie smarthphones
       // photo size sorted by interest
       _fetchParams = { batchSize: 40, photoSizes: 'url_t,url_s,url_q' };
     } else {
+      // large screens => assume network is better => bigger batch, larger photos
       _fetchParams = { batchSize: 80, photoSizes: 'url_n,url_m,url_z' };
     }
 
@@ -203,8 +219,8 @@ $( document ).ready(function() {
 
   FindFlickr.prototype = {
     search: function search( term ) {
-      term = term.replace(/\s+/g, '');
-      if ( term ) {
+
+      if ( _checkTerm( term ) ) {
         _setTerm.call( this, term );
         _currentPageNb = 1;
         
@@ -220,10 +236,10 @@ $( document ).ready(function() {
     loadPage: function loadPage( pageNumber, term ) {
       var deffered = new $.Deferred();
 
-      if ( pageNumber && term ) {
+      if ( pageNumber && _checkTerm( term ) ) {
         // #loadPage( 23, 'beer' )
         _clearContainer.call( this );
-        // clean inputs
+        // sanitize  input
         _currentPageNb = parseInt( pageNumber );
         _setTerm.call( this, term );
       } else if ( !pageNumber && !term ) {
@@ -233,8 +249,8 @@ $( document ).ready(function() {
         return null;
       }
 
+      // display spinner
       this.$fetchingInfos.removeClass('hidden');
-
 
       $.when( _fetchPagePhotos() )
         .then(
@@ -292,6 +308,7 @@ $( document ).ready(function() {
                 gutterWidth: 5
               }
             });
+            // hide spinner
             this.$fetchingInfos.addClass('hidden');
             deffered.resolve();
           },
@@ -307,7 +324,7 @@ $( document ).ready(function() {
     }
   }
 
-  // if selector dont target a unique element, do nothing
+  // if selector doesnt target a unique element, do nothing
   window.FindFlickr = function( selector ) {
     var $elem = $( selector ),
       ret;
@@ -319,7 +336,21 @@ $( document ).ready(function() {
     return ret;
   };
 
-  window.findF = window.FindFlickr('#search-placeholder');
 
-}); // domready
+
+  // Now let's use it!!!
+  $( document ).ready(function() {
+    // -- Initialize an instance of FindFlickr on a arbitrary placeholder
+    // This will load the complete UI, ready to work!
+    var findFlickr = window.FindFlickr('#search-placeholder');
+
+    // -- It's possible to handle the instance programmatically:
+    // 1) search a term and trigger an infinite scroll
+    findFlickr.search('funk');
+
+    // 2) search a term and retrieve a specific page in the matched photos
+    // Note: in this case there is no infinite scroll
+    // This method can be use to easily implement a classical pagination
+    // findFlickr.loadPage( 6, 'red apple' );
+  });
 })( this, this.document, jQuery );
