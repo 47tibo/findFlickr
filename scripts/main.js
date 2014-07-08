@@ -9,7 +9,7 @@
     _term = null,
     _fetchParams = null,
     _currentPageNb = null,
-    _url = 'http://api.flickr.com/services/rest/?api_key=e2deebbdd91747fef895ebdbf71b6c70'
+    _url = 'https://api.flickr.com/services/rest/?api_key=e2deebbdd91747fef895ebdbf71b6c70'
       + '&format=json&jsoncallback=ieFix',
     _jsonpSettings = {
       dataType: 'jsonp',
